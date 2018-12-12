@@ -1,4 +1,5 @@
 import re, rdstdin, strutils, sequtils, algorithm, streams, terminal
+import unpack
 
 func present(s: string): bool = len(s) > 0
 let input = newFileStream("./input.txt").readAll().splitLines()
@@ -11,10 +12,10 @@ type
 var stars = newSeq[Star]()
 
 for line in input:
-  let ls = line.findAll(re(r"-?\d+")).map(parseInt)
-  stars.add(Star(x: ls[0], y: ls[1], vx: ls[2], vy: ls[3]))
+  [x, y, vx, vy] <- line.findAll(re"-?\d+").map(parseInt)
+  stars.add(Star(x: x, y: y, vx: vx, vy: vy))
 
-var maxX, minX, kmaxY, kminY
+var maxX, minX, maxY, minY: int
 
 proc reBound() =
   maxX = stars.mapIt(it.x).max
@@ -48,3 +49,4 @@ while true:
     echo count
     print()
     echo "----"
+    break
