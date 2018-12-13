@@ -1,36 +1,35 @@
 import re, rdstdin, strutils, sequtils, algorithm, macros, tables
+import unpack
 
 let input = stdin.readAll().splitLines()
 
 var registers = newTable[string, int]()
 
-dumpTree:
-  if registers.getOrDefault("a", 0) > 1:
-    registers["b"] = registers.getOrDefault("b", 0) + 5
-
-macro changeRegister(register: string, change: NimNode): typed =
-  newAssignment(
-    newTree(
-      nnkBracketExpr,
-      [
-        newIdentNode("registers"),
-        register
-      ]
-    ),
-    newIntLitNode(20)
-  )
-
-macro checkRegister(checkReg, checkExp: string, checkAmout: int): typed =
-  newCall(newIdentNode(checkExp))
+proc register(s: string): int = registers.getOrDefault(s, 0)
+var maximum = 0
 
 for line in input:
-  let l = line.findAll(re"\S+")
+  if line == "": continue
 
-  let changeReg = l[0]
-  let changeMode = l[1]
-  let changeAmount = l[2].parseInt
-  let checkReg = l[4]
-  let checkExp = l[5]
-  let checkAmount = l[6].parseInt
+  [changeReg, changeMode, changeAmount, _, checkReg, checkExp, checkAmount] <-
+    line.findAll(re"\S+")
 
-echo registers
+  var doIt: bool
+  case checkExp:
+    of "<": doIt = register(checkReg) < checkAmount.parseInt
+    of "<=": doIt = register(checkReg) <= checkAmount.parseInt
+    of ">": doIt = register(checkReg) > checkAmount.parseInt
+    of ">=": doIt = register(checkReg) >= checkAmount.parseInt
+    of "==": doIt = register(checkReg) == checkAmount.parseInt
+    of "!=": doIt = register(checkReg) != checkAmount.parseInt
+
+  if doIt:
+    registers[changeReg] = register(changeReg)
+
+    case changeMode:
+      of "inc": registers[changeReg] += changeAmount.parseInt
+      of "dec": registers[changeReg] -= changeAmount.parseInt
+  for v in registers.values:
+    if v > maximum: maximum = v
+
+echo maximum

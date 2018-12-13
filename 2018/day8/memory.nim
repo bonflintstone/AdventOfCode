@@ -1,8 +1,9 @@
 import re, rdstdin, strutils, sequtils, algorithm
 
-func present(s: string): bool = len(s) > 0
-let input = stdin.readAll().splitLines()
-  .filter(present)[0].findAll(re(r"\d+")).map(parseInt)
+let input = stdin.readAll()
+  .splitLines()
+  .filterIt(it.len > 0)
+  .mapIt(it.findAll(re"\d+").map(parseInt))
 
 var index = 0
 
@@ -13,23 +14,22 @@ proc next(): int =
 var meta = newSeq[int]()
 
 proc readNode(): int =
-  let numChilds = next()
-  let numMeta = next()
+  let lenChildren = next()
+  let lenMeta = next()
 
-  var childs = newSeq[int]()
+  var children = newSeq[int]()
 
-  for i in 0 ..< numChilds:
-    childs.add(readNode())
+  for i in 0 ..< lenChildren:
+    children.add readNode()
 
-  for i in 0 ..< numMeta:
+  for i in 0 ..< lenMeta:
     let tmp = next()
-    meta.add(tmp)
+    meta.add tmp
 
-    if numChilds == 0:
+    if lenChildren == 0:
       result += tmp
-    else:
-      if tmp <= numChilds:
-        result += childs[tmp - 1]
+    elif tmp <= lenChildren:
+      result += children[tmp - 1]
 
 echo readNode() # Part 2
 echo meta.foldl(a + b) # Part 1
